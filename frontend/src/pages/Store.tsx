@@ -25,7 +25,7 @@ export function Store() {
     queryFn: fetchProducts,
   });
 
-  const categoryOrder = ["Coffee", "Drinking Chocolate", "Flavours", "Bakery", "Packaged Chocolate"];
+  const categoryOrder = ["Coffee", "Flavours", "Bakery", "Packaged Chocolate"];
   const sortedProducts = [...products].sort(
     (a, b) =>
       (categoryOrder.indexOf(a.category) === -1 ? categoryOrder.length : categoryOrder.indexOf(a.category)) -

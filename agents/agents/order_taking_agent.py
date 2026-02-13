@@ -41,7 +41,6 @@ class OrderTakingAgent:
             - Espresso shot - $2.00
             - Hazelnut Biscotti - $2.75
             - Chocolate Croissant - $3.75
-            - Dark chocolate (Drinking Chocolate) - $5.00
             - Cranberry Scone - $3.50
             - Croissant - $3.25
             - Almond Croissant - $4.00
@@ -52,7 +51,7 @@ class OrderTakingAgent:
             - Hazelnut syrup - $1.50
             - Caramel syrup - $1.50
             - Sugar Free Vanilla syrup - $1.50
-            - Dark chocolate (Packaged Chocolate) - $3.00
+            - Dark chocolate - $3.00
 
             Process:
             1. Take the order

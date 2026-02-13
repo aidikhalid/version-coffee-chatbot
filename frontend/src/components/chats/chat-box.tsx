@@ -43,7 +43,7 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
         const newQuantities: Record<string, number> = {};
         for (const orderItem of order) {
           const product = products.find(
-            (p) => p.name.toLowerCase() === orderItem.item.toLowerCase()
+            (p) => p.name.trim().toLowerCase() === orderItem.item.trim().toLowerCase()
           );
           if (product) {
             newQuantities[product._id] = orderItem.quantity;

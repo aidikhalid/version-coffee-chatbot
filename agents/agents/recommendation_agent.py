@@ -22,7 +22,9 @@ class RecommendationAgent:
         self.llm = ChatOpenAI(model=os.getenv("MODEL_NAME", "gpt-4o-mini"))
 
         with open(apriori_recommendations_path, "r") as f:
-            self.apriori_recommendations = json.load(f)
+            raw = json.load(f)
+        self.apriori_recommendations = raw
+        self._apriori_lower = {k.lower(): v for k, v in raw.items()}
 
         self.popular_recommendations = pd.read_csv(popular_recommendations_path)
         self.products = self.popular_recommendations["product"].tolist()
@@ -34,8 +36,9 @@ class RecommendationAgent:
         recommendation_list = []
 
         for product in products:
-            if product in self.apriori_recommendations:
-                recommendation_list.extend(self.apriori_recommendations[product])
+            key = product.lower()
+            if key in self._apriori_lower:
+                recommendation_list.extend(self._apriori_lower[key])
 
         # Sort recommendation list by 'confidence' column
         recommendation_list.sort(key=lambda x: x["confidence"], reverse=True)
