@@ -38,9 +38,13 @@ export const loginValidator = () => [
 ];
 
 export const chatCompletionValidator = () => [
-  body("message")
+  body("messages")
+    .isArray({ min: 1 })
+    .withMessage("Messages array is required and must not be empty"),
+  body("messages.*.role")
+    .isIn(["user", "assistant"])
+    .withMessage("Each message must have a valid role"),
+  body("messages.*.content")
     .notEmpty()
-    .withMessage("Message is required")
-    .isLength({ max: 2000 })
-    .withMessage("Message must not exceed 2000 characters"),
+    .withMessage("Each message must have content"),
 ];

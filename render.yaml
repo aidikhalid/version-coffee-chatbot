@@ -1,11 +1,13 @@
 services:
+  # Node.js API
   - type: web
-    name: ai-chat-type-backend
+    name: version-coffee-api
     env: node
     region: oregon
     plan: free
-    buildCommand: cd api && npm install && npm run build
-    startCommand: cd api && npm start
+    rootDir: api
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -17,9 +19,28 @@ services:
         generateValue: true
       - key: COOKIE_SECRET
         generateValue: true
-      - key: OPENAI_API_KEY
-        sync: false
       - key: ARCJET_KEY
         sync: false
       - key: CLIENT_URL
+        sync: false
+      - key: AGENTS_URL
+        sync: false
+
+  # Python Agents
+  - type: web
+    name: version-coffee-agents
+    env: python
+    region: oregon
+    plan: free
+    rootDir: agents
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: API_URL
         sync: false

@@ -33,5 +33,12 @@ yarn-error.log*
 # Testing
 coverage/
 
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
 # Misc
 .cache/

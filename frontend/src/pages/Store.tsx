@@ -7,77 +7,23 @@ import UserMenu from "@/components/layout/user-menu";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import ChatBox from "@/components/chats/chat-box";
-
-interface CoffeeProduct {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-}
-
-const COFFEE_PRODUCTS: CoffeeProduct[] = [
-  {
-    id: "espresso",
-    name: "Espresso",
-    description: "Rich and bold single shot of pure coffee essence.",
-    price: 3.5,
-    image: "☕",
-  },
-  {
-    id: "americano",
-    name: "Americano",
-    description: "Espresso diluted with hot water for a smooth, full-bodied taste.",
-    price: 4.0,
-    image: "☕",
-  },
-  {
-    id: "cappuccino",
-    name: "Cappuccino",
-    description: "Equal parts espresso, steamed milk, and velvety foam.",
-    price: 5.0,
-    image: "☕",
-  },
-  {
-    id: "latte",
-    name: "Caffè Latte",
-    description: "Smooth espresso with steamed milk and a light layer of foam.",
-    price: 5.5,
-    image: "☕",
-  },
-  {
-    id: "mocha",
-    name: "Mocha",
-    description: "Espresso blended with chocolate and steamed milk, topped with cream.",
-    price: 6.0,
-    image: "☕",
-  },
-  {
-    id: "cold-brew",
-    name: "Cold Brew",
-    description: "Slow-steeped for 12 hours, smooth and refreshing over ice.",
-    price: 5.0,
-    image: "🧊",
-  },
-  {
-    id: "matcha-latte",
-    name: "Matcha Latte",
-    description: "Premium Japanese matcha whisked with steamed milk.",
-    price: 6.0,
-    image: "🍵",
-  },
-  {
-    id: "affogato",
-    name: "Affogato",
-    description: "A scoop of vanilla gelato drowned in a shot of hot espresso.",
-    price: 6.5,
-    image: "🍨",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchProducts } from "@/api/products";
+import type { Product } from "@/api/products";
+import { Spinner } from "@/components/ui/spinner";
 
 export function Store() {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
 
   const getQuantity = (id: string) => quantities[id] || 0;
 
@@ -95,7 +41,7 @@ export function Store() {
 
   const totalItems = Object.values(quantities).reduce((sum, q) => sum + q, 0);
   const totalPrice = Object.entries(quantities).reduce((sum, [id, qty]) => {
-    const product = COFFEE_PRODUCTS.find((p) => p.id === id);
+    const product = products.find((p) => p._id === id);
     return sum + (product?.price || 0) * qty;
   }, 0);
 
@@ -108,7 +54,7 @@ export function Store() {
     const orderItems = Object.entries(quantities)
       .filter(([, qty]) => qty > 0)
       .map(([id, qty]) => {
-        const product = COFFEE_PRODUCTS.find((p) => p.id === id);
+        const product = products.find((p) => p._id === id);
         return `${qty}x ${product?.name}`;
       })
       .join(", ");
@@ -148,52 +94,76 @@ export function Store() {
             Select your favorites below, or use the chatbot to place your order.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {COFFEE_PRODUCTS.map((product) => {
-              const qty = getQuantity(product.id);
-              return (
-                <Card
-                  key={product.id}
-                  className={`transition-all ${qty > 0 ? "ring-2 ring-primary" : ""}`}
-                >
-                  <CardContent className="flex flex-col gap-3 p-5">
-                    <div className="text-4xl text-center">{product.image}</div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground leading-snug mt-1">
-                        {product.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="font-bold text-primary text-lg">
-                        ${product.price.toFixed(2)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => updateQuantity(product.id, -1)}
-                          disabled={qty === 0}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="w-6 text-center font-medium">{qty}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => updateQuantity(product.id, 1)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center gap-2 py-16">
+              <Spinner />
+              <p className="text-muted-foreground">Loading products...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <p className="text-destructive">Failed to load products.</p>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {products.map((product) => {
+                const qty = getQuantity(product._id);
+                return (
+                  <Card
+                    key={product._id}
+                    className={`transition-all ${qty > 0 ? "ring-2 ring-primary" : ""}`}
+                  >
+                    <CardContent className="flex flex-col gap-3 p-5">
+                      <img
+                        src={product.image_path}
+                        alt={product.name}
+                        className="w-full h-40 object-cover rounded-md"
+                      />
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-lg">{product.name}</h3>
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                            {product.category}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-snug mt-1 line-clamp-2">
+                          {product.description}
+                        </p>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="font-bold text-primary text-lg">
+                          ${product.price.toFixed(2)}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(product._id, -1)}
+                            disabled={qty === 0}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-6 text-center font-medium">{qty}</span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(product._id, 1)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

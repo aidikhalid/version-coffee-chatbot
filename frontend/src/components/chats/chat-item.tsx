@@ -19,7 +19,7 @@ export function ChatItem({
       <div className="md:max-w-[calc(100%-3.75rem)] flex justify-end border border-card rounded-xl overflow-hidden">
         <div className="px-4 md:px-6 py-4 bg-secondary">
           <div
-            className="md:text-lg text-secondary-foreground max-w-none"
+            className="text-secondary-foreground max-w-none"
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(md.render(content)),
             }}
@@ -39,7 +39,7 @@ export function ChatItem({
         <div className="px-4 md:px-6 py-4 bg-secondary flex items-center gap-2">
           {useSpinner && <Spinner />}
           <div
-            className="md:text-lg text-secondary-foreground max-w-none"
+            className="text-secondary-foreground max-w-none"
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(md.render(content)),
             }}
