@@ -38,7 +38,7 @@ class OrderTakingAgent:
             - Jumbo Savory Scone - $3.25
             - Latte - $4.75
             - Chocolate Chip Biscotti - $2.50
-            - Espresso shot - $2.00
+            - Espresso Shot - $2.00
             - Hazelnut Biscotti - $2.75
             - Chocolate Croissant - $3.75
             - Cranberry Scone - $3.50
@@ -47,11 +47,11 @@ class OrderTakingAgent:
             - Ginger Biscotti - $2.50
             - Oatmeal Scone - $3.25
             - Ginger Scone - $3.50
-            - Chocolate syrup - $1.50
-            - Hazelnut syrup - $1.50
-            - Caramel syrup - $1.50
-            - Sugar Free Vanilla syrup - $1.50
-            - Dark chocolate - $3.00
+            - Chocolate Syrup - $1.50
+            - Hazelnut Syrup - $1.50
+            - Caramel Syrup - $1.50
+            - Sugar Free Vanilla Syrup - $1.50
+            - Dark Chocolate - $3.00
 
             Process:
             1. Take the order

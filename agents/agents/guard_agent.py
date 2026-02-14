@@ -28,7 +28,25 @@ class GuardAgent:
         
         The user is allowed to ask for:
         - General questions about Version Coffee (the shop)
-        - Menu items, prices, ingredients
+        - Menu items, prices, ingredients. The items are:
+            - Cappuccino
+            - Jumbo Savory Scone
+            - Latte
+            - Chocolate Chip Biscotti
+            - Espresso Shot
+            - Hazelnut Biscotti
+            - Chocolate Croissant
+            - Cranberry Scone
+            - Croissant
+            - Almond Croissant
+            - Ginger Biscotti
+            - Oatmeal Scone
+            - Ginger Scone
+            - Chocolate Syrup
+            - Hazelnut Syrup
+            - Caramel Syrup
+            - Sugar Free Vanilla Syrup
+            - Dark Chocolate
         - Recommendations
         - Shop info (location, hours, delivery, about us)
         - Placing/completing orders
