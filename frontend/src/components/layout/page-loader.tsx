@@ -17,7 +17,7 @@ export function PageLoader() {
         <Spinner />
         <p className="text-muted-foreground">Loading...</p>
         {showBackendMessage && (
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-center">
             This may take a moment. Please wait.
           </p>
         )}

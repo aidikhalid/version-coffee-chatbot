@@ -109,7 +109,7 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
           <Spinner className="size-6" />
           <p className="text-muted-foreground">Starting chatbot...</p>
           {showSlowMessage && (
-            <p className="text-muted-foreground text-sm text-center px-4">
+            <p className="text-muted-foreground text-center">
               This may take a moment. Please wait.
             </p>
           )}
