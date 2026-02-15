@@ -8,7 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import { isAgentsReady, checkAgentsHealth } from "@/lib/agents-health";
 
 interface ChatBoxProps {
   onClose: () => void;
@@ -21,6 +23,27 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: "Welcome to Version Coffee! I’m here to help with anything you’d like to know about our store or menu. What can I get started for you today?" }]);
   const [isLoading, setIsLoading] = useState(false);
+  const [agentsReady, setAgentsReady] = useState(isAgentsReady());
+  const [showSlowMessage, setShowSlowMessage] = useState(false);
+
+  useEffect(() => {
+    if (agentsReady) return;
+
+    const poll = setInterval(async () => {
+      const ready = await checkAgentsHealth();
+      if (ready) {
+        setAgentsReady(true);
+        clearInterval(poll);
+      }
+    }, 3000);
+
+    const slowTimer = setTimeout(() => setShowSlowMessage(true), 8000);
+
+    return () => {
+      clearInterval(poll);
+      clearTimeout(slowTimer);
+    };
+  }, [agentsReady]);
 
   const handleSubmit = async () => {
     if (!inputRef.current?.value || isLoading) return;
@@ -81,66 +104,80 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
         </Button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 min-h-0 relative">
-        <ScrollArea className="h-full">
-          <div className="p-4">
-            {messages.length > 0 ? (
-              <>
-                {messages.map((message, index) => (
-                  <ChatItem
-                    key={index}
-                    role={message.role}
-                    content={message.content}
-                  />
-                ))}
-                {isLoading && (
-                  <ChatItem
-                    role="assistant"
-                    content="Thinking..."
-                    useSpinner={true}
-                  />
+      {!agentsReady ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-2">
+          <Spinner className="size-6" />
+          <p className="text-muted-foreground">Starting chatbot...</p>
+          {showSlowMessage && (
+            <p className="text-muted-foreground text-sm text-center px-4">
+              This may take a moment. Please wait.
+            </p>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Messages */}
+          <div className="flex-1 min-h-0 relative">
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                {messages.length > 0 ? (
+                  <>
+                    {messages.map((message, index) => (
+                      <ChatItem
+                        key={index}
+                        role={message.role}
+                        content={message.content}
+                      />
+                    ))}
+                    {isLoading && (
+                      <ChatItem
+                        role="assistant"
+                        content="Thinking..."
+                        useSpinner={true}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <p className="text-muted-foreground text-center">
+                      Ask a question or start a conversation.
+                    </p>
+                  </div>
                 )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8">
-                <p className="text-muted-foreground text-center">
-                  Ask a question or start a conversation.
-                </p>
+                <div ref={messagesEndRef} className="pt-4" />
               </div>
-            )}
-            <div ref={messagesEndRef} className="pt-4" />
+            </ScrollArea>
           </div>
-        </ScrollArea>
-      </div>
 
-      {/* Input */}
-      <div className="p-3 bg-muted">
-        <Card className="shadow-none border-0 p-0 bg-transparent">
-          <CardContent className="flex gap-2 p-0">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit();
-              }}
-              className="flex gap-2 w-full"
-            >
-              <Input
-                placeholder="Enter your message..."
-                ref={inputRef}
-                disabled={isLoading}
-              />
-              <Button
-                type="submit"
-                variant="outline"
-                disabled={isLoading}
-              >
-                <ArrowUpRight />
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Input */}
+          <div className="p-3 bg-muted">
+            <Card className="shadow-none border-0 p-0 bg-transparent">
+              <CardContent className="flex gap-2 p-0">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit();
+                  }}
+                  className="flex gap-2 w-full"
+                >
+                  <Input
+                    placeholder="Enter your message..."
+                    ref={inputRef}
+                    disabled={isLoading}
+                  />
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    disabled={isLoading}
+                  >
+                    <ArrowUpRight />
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }

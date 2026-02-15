@@ -7,10 +7,7 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Wake agents service from Render free tier spin-down
-const AGENTS_URL = import.meta.env.VITE_AGENTS_URL;
-if (AGENTS_URL) {
-  fetch(`${AGENTS_URL}/health`).catch(() => {});
-}
+import "@/lib/agents-health";
 
 const queryClient = new QueryClient({
   defaultOptions: {
