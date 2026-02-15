@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { MessageSquareCode } from "lucide-react";
+import { Coffee } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "@/components/theme/mode-toggle";
 import { Spinner } from "@/components/ui/spinner";
@@ -67,10 +67,10 @@ export function Signup() {
       <div className="w-full md:w-1/2 h-full pt-4 md:pt-6 pb-2 flex items-center justify-center">
         <div className="text-center">
           <div className="flex md:flex-col md:mb-2 items-center justify-center gap-2">
-            <MessageSquareCode className="md:w-40 md:h-40 text-primary" />
-            <h1 className="text-2xl font-bold text-primary">AI Chat Type</h1>
+            <Coffee className="md:w-40 md:h-40 text-primary" />
+            <h1 className="text-2xl font-bold text-primary">Version Coffee</h1>
           </div>
-          <p className="text-muted-foreground">Powered by ChatGPT 4o Mini</p>
+          <p className="text-muted-foreground">Coffee store with chatbot</p>
         </div>
       </div>
       {/* FORM COLUMN - RIGHT SIDE */}
