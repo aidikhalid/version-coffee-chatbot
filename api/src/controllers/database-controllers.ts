@@ -16,24 +16,7 @@ export const resetDatabase = async (req: Request, res: Response) => {
     await User.deleteMany({});
     console.log("All users deleted successfully.");
 
-    // Create default chats with current timestamps
-    const now = new Date();
-    const shinjiDefaultChats = [
-      {
-        role: "user",
-        content: "Hello, World!",
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        role: "assistant",
-        content: "Hello! How can I assist you today?",
-        createdAt: now,
-        updatedAt: now,
-      },
-    ];
-
-    // Create default users and add default chats
+    // Create default users
     await Promise.all(
       defaultUsers.map(async (userData) => {
         const hashedPassword = await hash(userData.password, 10);
@@ -41,7 +24,6 @@ export const resetDatabase = async (req: Request, res: Response) => {
           name: userData.name,
           email: userData.email,
           password: hashedPassword,
-          chats: shinjiDefaultChats,
         });
         console.log(`Created user: ${userData.name}`);
       }),
