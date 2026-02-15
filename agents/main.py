@@ -9,10 +9,16 @@ PORT = int(os.getenv("PORT", 8000))
 
 app = FastAPI(title="Version Coffee Agents")
 
-# CORS — allow the Node.js API to call this service
+# CORS — allow the Node.js API and frontend to call this service
+origins = [os.getenv("API_URL", "http://localhost:3000")]
+if os.getenv("CLIENT_URL"):
+    origins.append(os.getenv("CLIENT_URL"))
+else:
+    origins.append("http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("API_URL", "http://localhost:3000")],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
