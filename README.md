@@ -276,7 +276,7 @@ The project is configured for deployment on **Render** via `render.yaml`:
 **Aidi Khalid**
 
 - GitHub: [@Geevee-101](https://github.com/Geevee-101)
-- LinkedIn: [Aidi Khalid](https://www.linkedin.com/in/aidikhalid/)
+- LinkedIn: [Aidi Khalid](https://www.linkedin.com/in/aidikhalid)
 
 ## License
 
