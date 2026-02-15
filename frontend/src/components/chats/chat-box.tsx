@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ChatItem from "./chat-item";
-import { sendChatRequest } from "@/api/chat";
+import { sendChatRequestStream } from "@/api/chat";
 import type { ChatMessage } from "@/api/chat";
 import type { Product } from "@/api/products";
 import { ArrowUpRight, X } from "lucide-react";
@@ -21,10 +21,12 @@ interface ChatBoxProps {
 export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: "Welcome to Version Coffee! I’m here to help with anything you’d like to know about our store or menu. What can I get started for you today?" }]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: "Welcome to Version Coffee! I'm here to help with anything you'd like to know about our store or menu. What can I get started for you today?" }]);
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
   const [agentsReady, setAgentsReady] = useState(isAgentsReady());
   const [showSlowMessage, setShowSlowMessage] = useState(false);
+  const streamingRef = useRef("");
 
   useEffect(() => {
     if (agentsReady) return;
@@ -55,14 +57,35 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
     const updatedMessages = [...messages, userChat];
     setMessages(updatedMessages);
     setIsLoading(true);
+    setStreamingContent("");
+    streamingRef.current = "";
 
     try {
-      const response = await sendChatRequest(updatedMessages);
-      setMessages((prev) => [...prev, response]);
+      let memory: Record<string, unknown> = {};
+
+      await sendChatRequestStream(
+        updatedMessages,
+        (token) => {
+          streamingRef.current += token;
+          setStreamingContent(streamingRef.current);
+        },
+        (mem) => {
+          memory = mem;
+        },
+      );
+
+      const assistantMessage: ChatMessage = {
+        role: "assistant",
+        content: streamingRef.current,
+        memory,
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setStreamingContent("");
+      streamingRef.current = "";
 
       // Sync chatbot order to store quantities
-      if (response.memory?.agent === "order_taking_agent" && response.memory?.order) {
-        const order = response.memory.order as { item: string; quantity: number }[];
+      if (memory?.agent === "order_taking_agent" && memory?.order) {
+        const order = memory.order as { item: string; quantity: number }[];
         const newQuantities: Record<string, number> = {};
         for (const orderItem of order) {
           const product = products.find(
@@ -76,23 +99,24 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
       }
     } catch {
       toast.error("Failed to send message.");
-      // Remove the user message on failure
       setMessages(messages);
+      setStreamingContent("");
+      streamingRef.current = "";
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Auto-scroll when messages change or loading state changes
+  // Auto-scroll when messages change or streaming content updates
   useEffect(() => {
-    if (messages.length === 0) return;
+    if (messages.length === 0 && !streamingContent) return;
     requestAnimationFrame(() => {
       messagesEndRef.current?.scrollIntoView({
         block: "end",
         behavior: "smooth",
       });
     });
-  }, [messages.length, isLoading]);
+  }, [messages.length, isLoading, streamingContent]);
 
   return (
     <div className="fixed bottom-25 right-4 md:right-8 w-[calc(100%-2rem)] md:w-[35rem] h-[calc(100vh-8rem)] md:h-[32rem] bg-background border border-primary rounded-2xl shadow-xl flex flex-col z-50 overflow-hidden">
@@ -129,11 +153,17 @@ export function ChatBox({ onClose, products, setQuantities }: ChatBoxProps) {
                         content={message.content}
                       />
                     ))}
-                    {isLoading && (
+                    {isLoading && !streamingContent && (
                       <ChatItem
                         role="assistant"
                         content="Thinking..."
                         useSpinner={true}
+                      />
+                    )}
+                    {streamingContent && (
+                      <ChatItem
+                        role="assistant"
+                        content={streamingContent}
                       />
                     )}
                   </>

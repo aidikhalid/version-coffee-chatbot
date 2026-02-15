@@ -1,6 +1,6 @@
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 import pandas as pd
 import os
 import json
@@ -199,6 +199,54 @@ class RecommendationAgent:
         output = self.postprocess_recommendation(response.content)
 
         return output
+
+    def get_stream(self, messages: List[Dict[str, Any]]) -> Generator:
+        messages = deepcopy(messages)
+
+        recommendation_classification = self.recommendation_classification(messages)
+        recommendation_type = recommendation_classification["recommendation_type"]
+
+        if recommendation_type == "apriori":
+            recommendation = self.get_apriori_recommendation(
+                recommendation_classification["parameters"]
+            )
+        elif recommendation_type == "popular":
+            recommendation = self.get_popular_recommendations()
+        elif recommendation_type == "popular by category":
+            recommendation = self.get_popular_recommendations(
+                recommendation_classification["parameters"]
+            )
+
+        if recommendation == []:
+            yield {
+                "type": "token",
+                "content": "Sorry, I couldn't find any recommendations for you.",
+            }
+            yield {"type": "memory", "content": {"agent": "recommendation_agent"}}
+            return
+
+        recommendation_str = ", ".join(recommendation)
+
+        system_prompt = """
+        You are a helpful AI assistant for a coffee shop application which serves drinks and pastries.
+        your task is to recommend items to the user based on their input message. And respond in a friendly but concise way. And put it an unordered list with a very small description.
+
+        I will provide you with a list of items to recommend to the user based on their input message.
+        """
+
+        prompt = f"""
+        {messages[-1]["content"]}
+
+        Please recommend these items: {recommendation_str}
+        """
+
+        messages[-1]["content"] = prompt
+        input_messages = [{"role": "system", "content": system_prompt}] + messages[-3:]
+
+        for chunk in self.llm.stream(input_messages):
+            if chunk.content:
+                yield {"type": "token", "content": chunk.content}
+        yield {"type": "memory", "content": {"agent": "recommendation_agent"}}
 
     def postprocess_recommendation(self, content: str) -> AgentMessage:
         memory: RecommendationMemory = {"agent": "recommendation_agent"}

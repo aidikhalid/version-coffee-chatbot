@@ -41,3 +41,17 @@ class AgentController:
         agent = self.agent_dict[chosen_agent]
         agent_response = agent.get_response(messages)
         return agent_response
+
+    def get_stream(self, messages):
+        # Guard and classification run synchronously (structured output)
+        response = self.guard_agent.get_response(messages)
+        if response["memory"]["decision"] == "not allowed":
+            yield {"type": "token", "content": response["content"]}
+            yield {"type": "memory", "content": response["memory"]}
+            return
+
+        classification_response = self.classification_agent.get_response(messages)
+        chosen_agent = classification_response["memory"]["decision"]
+
+        agent = self.agent_dict[chosen_agent]
+        yield from agent.get_stream(messages)

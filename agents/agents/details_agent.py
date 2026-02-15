@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from pymongo import MongoClient
 import dotenv
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 from .types import AgentMessage, DetailsMemory
 
 dotenv.load_dotenv()
@@ -38,7 +38,7 @@ class DetailsAgent:
         ]
         return list(collection.aggregate(pipeline))
 
-    def get_response(self, messages: List[Dict[str, Any]]) -> AgentMessage:
+    def _build_input_messages(self, messages: List[Dict[str, Any]]):
         messages = deepcopy(messages)
 
         user_message = messages[-1]["content"]
@@ -74,11 +74,19 @@ class DetailsAgent:
 
         input_messages = [{"role": "system", "content": system_prompt}]
         input_messages += messages[1:]
+        return input_messages
 
+    def get_response(self, messages: List[Dict[str, Any]]) -> AgentMessage:
+        input_messages = self._build_input_messages(messages)
         response = self.llm.invoke(input_messages)
-        output = self.postprocess(response.content)
+        return self.postprocess(response.content)
 
-        return output
+    def get_stream(self, messages: List[Dict[str, Any]]) -> Generator:
+        input_messages = self._build_input_messages(messages)
+        for chunk in self.llm.stream(input_messages):
+            if chunk.content:
+                yield {"type": "token", "content": chunk.content}
+        yield {"type": "memory", "content": {"agent": "details_agent"}}
 
     def postprocess(self, output: str) -> AgentMessage:
         memory: DetailsMemory = {"agent": "details_agent"}

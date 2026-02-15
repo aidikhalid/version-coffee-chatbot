@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agent_controller import AgentController
 import os
+import json
 import uvicorn
 
 PORT = int(os.getenv("PORT", 8000))
@@ -56,6 +58,26 @@ async def chat(request: ChatRequest):
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chat/stream")
+async def chat_stream(request: ChatRequest):
+    def event_generator():
+        try:
+            messages = [msg.model_dump() for msg in request.messages]
+            for event in agent_controller.get_stream(messages):
+                data = json.dumps(event)
+                yield f"data: {data}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            error = json.dumps({"type": "error", "content": str(e)})
+            yield f"data: {error}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Version Coffee Chatbot
 
-A full-stack AI-powered coffee shop application with an intelligent chatbot that can answer questions, take orders, and provide personalized recommendations.
+A full-stack AI-powered coffee shop application with a chatbot that can answer questions, take orders, and provide recommendations.
 
 ## 🌐 Live Demo
 

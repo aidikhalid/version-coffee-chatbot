@@ -2,7 +2,7 @@ import os
 from langchain_openai import ChatOpenAI
 from copy import deepcopy
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Generator
 import dotenv
 from .types import AgentMessage, OrderTakingMemory, OrderItem as OrderItemType
 
@@ -131,3 +131,13 @@ class OrderTakingAgent:
             "content": result.response,
             "memory": memory,
         }
+
+    def get_stream(self, messages: List[Dict[str, Any]]) -> Generator:
+        # Structured output can't stream from LLM, so run synchronously
+        response = self.get_response(messages)
+        # Stream the response text in chunks
+        text = response["content"]
+        chunk_size = 4
+        for i in range(0, len(text), chunk_size):
+            yield {"type": "token", "content": text[i : i + chunk_size]}
+        yield {"type": "memory", "content": response["memory"]}
