@@ -2,6 +2,10 @@
 
 A full-stack AI-powered coffee shop application with an intelligent chatbot that can answer questions, take orders, and provide personalized recommendations.
 
+## 🌐 Live Demo
+
+Check out the live application: [https://version-coffee.aidikhalid.com/](https://version-coffee.aidikhalid.com/)
+
 ## Features
 
 - ☕ **Product Store** - Browse the full Version Coffee menu with categories, descriptions, and prices
