@@ -105,10 +105,12 @@ export function Store() {
         )}
 
         <div className="mx-auto">
-          <h2 className="text-xl font-semibold mb-1">Our Menu</h2>
-          <p className="text-muted-foreground mb-6">
-            Select your favorites below, or ask the chatbot for more details and to place your order.
-          </p>
+          <div className="max-w-[50%] md:max-w-[100%]">
+            <h2 className="text-xl font-semibold mb-1">Our Menu</h2>
+            <p className="text-muted-foreground mb-6">
+              Select your favorites below, or ask the chatbot for more details and to place your order.
+            </p>
+          </div>
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center gap-2 py-16">
